@@ -1,0 +1,35 @@
+# Production overrides — use with: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  db:
+    ports: []  # Do not expose DB to host in production
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Required — no default
+
+  backend:
+    restart: always
+    ports: []  # Only accessible via nginx
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+  frontend:
+    restart: always
+    ports: []  # Only accessible via nginx
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot-webroot:/var/www/certbot:ro
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  certbot-webroot:

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     supabase_service_key: str
     allowed_origins: str = "http://localhost:3000"
     max_upload_size_mb: int = 5
+    admin_api_key: str = ""
+    sentry_dsn: str = ""
 
     model_config = {"env_file": ".env"}
 
