@@ -26,7 +26,7 @@ if [ ! -d "/etc/letsencrypt/live/renate.in" ] && ! docker volume inspect "$(base
 fi
 
 echo "1/4 Pulling latest code..."
-git pull origin main
+git pull origin "$(git rev-parse --abbrev-ref HEAD)"
 
 echo ""
 echo "2/4 Building Docker images..."
