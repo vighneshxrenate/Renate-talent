@@ -18,6 +18,7 @@ const cspHeader = `
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  basePath: "/talent",
   async headers() {
     return [
       {
