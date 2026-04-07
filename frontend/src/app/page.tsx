@@ -4,37 +4,6 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import SubmissionForm from "@/components/SubmissionForm";
 
-// ── Count-up hook ─────────────────────────────────────────────────────────────
-function useCountUp(target: number, duration = 2200) {
-  const [count, setCount] = useState(0);
-  const started = useRef(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const t0 = performance.now();
-          const tick = (now: number) => {
-            const p = Math.min((now - t0) / duration, 1);
-            const eased = 1 - Math.pow(1 - p, 3);
-            setCount(Math.round(eased * target));
-            if (p < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        }
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [target, duration]);
-
-  return { count, ref };
-}
 
 // ── Parallax mouse hook ───────────────────────────────────────────────────────
 function useMouseParallax(factor = 0.02) {
@@ -272,9 +241,8 @@ function FormModal({
 }
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar({ onOpen }: { onOpen: () => void }) {
+function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
@@ -287,135 +255,55 @@ function Navbar({ onOpen }: { onOpen: () => void }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    document.body.classList.toggle("modal-open", menuOpen);
-    return () => document.body.classList.remove("modal-open");
-  }, [menuOpen]);
-
   return (
-    <>
-      <nav
+    <nav
+      style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        padding: scrolled ? "0.75rem 1.5rem" : "1rem 1.5rem",
+        transition: "all 0.35s ease",
+        ...(scrolled
+          ? {
+              background: "rgba(255,255,255,0.92)",
+              backdropFilter: "blur(20px) saturate(180%)",
+              WebkitBackdropFilter: "blur(20px) saturate(180%)",
+              borderBottom: "1px solid rgba(124,58,237,0.12)",
+              boxShadow: "0 4px 24px rgba(124,58,237,0.08)",
+            }
+          : {
+              background: "transparent",
+              borderBottom: "1px solid transparent",
+            }),
+      }}
+    >
+      {/* Scroll progress bar */}
+      <div
         style={{
-          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-          padding: scrolled ? "0.75rem 1.5rem" : "1rem 1.5rem",
-          transition: "all 0.35s ease",
-          ...(scrolled
-            ? {
-                background: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(20px) saturate(180%)",
-                WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                borderBottom: "1px solid rgba(124,58,237,0.12)",
-                boxShadow: "0 4px 24px rgba(124,58,237,0.08)",
-              }
-            : {
-                background: "transparent",
-                borderBottom: "1px solid transparent",
-              }),
+          position: "absolute", top: 0, left: 0, height: 2,
+          width: `${scrollProgress}%`,
+          background: "linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd)",
+          transition: "width 0.1s linear",
+        }}
+      />
+
+      <div
+        style={{
+          maxWidth: "72rem", margin: "0 auto",
+          display: "flex", alignItems: "center",
         }}
       >
-        {/* Scroll progress bar */}
+        {/* Logo */}
         <div
           style={{
-            position: "absolute", top: 0, left: 0, height: 2,
-            width: `${scrollProgress}%`,
-            background: "linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd)",
-            transition: "width 0.1s linear",
+            flexShrink: 0, borderRadius: 8,
+            transition: "transform 0.3s ease",
           }}
-        />
-
-        <div
-          style={{
-            maxWidth: "72rem", margin: "0 auto",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          {/* Logo */}
-          <div
-            style={{
-              position: "relative", width: 160, height: 48,
-              overflow: "hidden", borderRadius: 8, flexShrink: 0,
-              transition: "transform 0.3s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            <Image src="/logo.jpeg" alt="Renate AI" fill className="object-contain object-left" priority />
-          </div>
-
-          {/* Desktop CTA + Mobile hamburger */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <button
-              className="btn-primary hidden md:inline-flex"
-              onClick={onOpen}
-              style={{ padding: "0.5625rem 1.375rem", fontSize: "0.875rem" }}
-            >
-              Submit Resume →
-            </button>
-
-            {/* Animated hamburger */}
-            <button
-              className="md:hidden"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                width: 40, height: 40,
-                display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", gap: 5, padding: 8,
-              }}
-            >
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  style={{
-                    display: "block", width: 22, height: 2,
-                    background: "#374151", borderRadius: 2,
-                    transformOrigin: "center",
-                    transition: "transform 0.3s ease, opacity 0.3s ease",
-                    transform: menuOpen
-                      ? i === 0 ? "translateY(7px) rotate(45deg)"
-                        : i === 2 ? "translateY(-7px) rotate(-45deg)"
-                        : "scaleX(0)"
-                      : "none",
-                    opacity: menuOpen && i === 1 ? 0 : 1,
-                  }}
-                />
-              ))}
-            </button>
-          </div>
+          <Image src="/logo.jpeg" alt="Renate AI" width={160} height={48} className="object-contain" style={{ objectPosition: "left" }} priority />
         </div>
-      </nav>
-
-      {/* Mobile full-screen overlay */}
-      <div className={`mobile-menu${menuOpen ? " open" : ""}`}>
-        <button
-          onClick={() => setMenuOpen(false)}
-          aria-label="Close"
-          style={{
-            position: "absolute", top: "1.25rem", right: "1.5rem",
-            background: "none", border: "none", cursor: "pointer",
-            color: "#374151", fontSize: "1.5rem", lineHeight: 1,
-          }}
-        >
-          ✕
-        </button>
-        <div style={{ position: "relative", width: 160, height: 48, overflow: "hidden", borderRadius: 8 }}>
-          <Image src="/logo.jpeg" alt="Renate AI" fill className="object-contain object-left" />
-        </div>
-        <button
-          className="btn-primary"
-          onClick={() => { setMenuOpen(false); onOpen(); }}
-          style={{
-            fontSize: "1rem", padding: "1rem 2.5rem", marginTop: "0.5rem",
-            transition: "transform 0.35s cubic-bezier(.22,1,.36,1) 0.08s, opacity 0.3s ease 0.08s",
-            transform: menuOpen ? "translateY(0)" : "translateY(20px)",
-            opacity: menuOpen ? 1 : 0,
-          }}
-        >
-          Submit Your Resume
-        </button>
       </div>
-    </>
+    </nav>
   );
 }
 
@@ -598,12 +486,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           >
             Submit Your Resume
           </button>
-          <button
-            className="btn-outline"
-            onClick={() => document.getElementById("stats")?.scrollIntoView({ behavior: "smooth" })}
-          >
-            See Our Impact ↓
-          </button>
         </div>
 
         {/* Trust indicators */}
@@ -664,110 +546,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-// ── Stats Strip ───────────────────────────────────────────────────────────────
-interface StatDef {
-  raw: number; suffix: string; label: string; icon: string; gradient: string;
-}
-
-function StatCard({ stat, index }: { stat: StatDef; index: number }) {
-  const { count, ref } = useCountUp(stat.raw);
-  const display = stat.raw >= 1000 ? count.toLocaleString() : count.toString();
-
-  return (
-    <div
-      ref={ref}
-      className="glass-card reveal"
-      style={{ textAlign: "center", padding: "2rem 1.5rem", transitionDelay: `${index * 0.1}s` }}
-    >
-      <div
-        className="icon-box"
-        style={{ background: stat.gradient, margin: "0 auto 0.75rem", fontSize: "1.5rem" }}
-      >
-        {stat.icon}
-      </div>
-      <div
-        className="font-display text-gradient-violet"
-        style={{ fontSize: "2.5rem", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em" }}
-      >
-        {display}{stat.suffix}
-      </div>
-      <div style={{ color: "#94a3b8", fontSize: "0.875rem", marginTop: "0.625rem", fontWeight: 500 }}>
-        {stat.label}
-      </div>
-    </div>
-  );
-}
-
-function StatsStrip() {
-  const stats: StatDef[] = [
-    { raw: 50000, suffix: "+",   label: "Professionals Placed", icon: "🎓", gradient: "rgba(124,58,237,0.12)" },
-    { raw: 72,    suffix: "hrs", label: "Average Match Time",   icon: "⚡", gradient: "rgba(245,158,11,0.12)" },
-    { raw: 98,    suffix: "%",   label: "Satisfaction Rate",    icon: "⭐", gradient: "rgba(34,197,94,0.12)" },
-    { raw: 5000,  suffix: "+",   label: "Partner Companies",    icon: "🏢", gradient: "rgba(109,40,217,0.12)" },
-  ];
-
-  return (
-    <section
-      id="stats"
-      style={{
-        padding: "clamp(3rem, 6vw, 5rem) 1.5rem",
-        background: "linear-gradient(180deg, rgba(245,243,255,0.5) 0%, #ffffff 60%, rgba(237,233,254,0.2) 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Background orb */}
-      <div
-        className="animate-morph-blob"
-        style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600, height: 300,
-          background: "radial-gradient(ellipse, rgba(124,58,237,0.05) 0%, transparent 70%)",
-          filter: "blur(40px)", pointerEvents: "none",
-        }}
-      />
-
-      <div style={{ maxWidth: "64rem", margin: "0 auto", position: "relative", zIndex: 1 }}>
-        {/* Section label */}
-        <div className="reveal" style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <span
-            className="font-display"
-            style={{
-              color: "#7c3aed", fontSize: "0.75rem", fontWeight: 600,
-              letterSpacing: "0.14em", textTransform: "uppercase",
-              display: "block", marginBottom: "0.5rem",
-            }}
-          >
-            Our Impact
-          </span>
-          <h2
-            className="font-display"
-            style={{
-              fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)", fontWeight: 800,
-              letterSpacing: "-0.025em", color: "#0f0a1e", lineHeight: 1.15,
-            }}
-          >
-            Trusted by{" "}
-            <span className="text-gradient-violet">thousands</span>
-          </h2>
-        </div>
-
-        <div
-          className="stats-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}
-        >
-          {stats.map((s, i) => <StatCard key={s.label} stat={s} index={i} />)}
-        </div>
-      </div>
-
-      <style jsx>{`
-        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr !important; } }
-      `}</style>
-    </section>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
@@ -831,9 +609,8 @@ export default function Home() {
   return (
     <>
       <main style={{ background: "#ffffff" }}>
-        <Navbar onOpen={openModal} />
+        <Navbar />
         <Hero onOpen={openModal} />
-        <StatsStrip />
       </main>
 
       <FormModal
