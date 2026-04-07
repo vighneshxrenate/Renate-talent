@@ -85,7 +85,7 @@ async def client(db_session: AsyncSession, seed_data) -> AsyncGenerator[AsyncCli
 
     app.dependency_overrides[get_db] = _override_db
 
-    # Patch storage service to avoid real Supabase calls
+    # Patch storage service to avoid real filesystem writes during tests
     mock_upload = AsyncMock(return_value="test/path/resume.pdf")
     mock_delete = AsyncMock()
 

@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 
@@ -45,7 +46,8 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting Renate Talent API")
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    logger.info("Starting Renate Talent API (upload_dir=%s)", settings.upload_dir)
     yield
     logger.info("Shutting down, disposing connection pool")
     await engine.dispose()

@@ -10,6 +10,9 @@ services:
     ports: []  # Only accessible via nginx
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads:/app/uploads
 
   frontend:
     restart: always
@@ -27,9 +30,11 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - certbot-webroot:/var/www/certbot:ro
+      - uploads:/app/uploads:ro  # nginx can serve resumes directly
     depends_on:
       - backend
       - frontend
 
 volumes:
   certbot-webroot:
+  uploads:
