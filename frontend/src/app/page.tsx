@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { College, Industry } from "@/lib/types";
 import SubmissionForm from "@/components/SubmissionForm";
 
