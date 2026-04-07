@@ -3,7 +3,7 @@
 # Run once as root: bash setup.sh
 set -euo pipefail
 
-DOMAIN="${DOMAIN:?Set DOMAIN env var, e.g. DOMAIN=talent.yourdomain.com bash setup.sh}"
+DOMAIN="${DOMAIN:-renate.in}"
 REPO="${REPO:-https://github.com/vighneshxrenate/Renate-talent.git}"
 APP_DIR="/opt/renate-talent"
 
@@ -25,11 +25,12 @@ if [ ! -f backend/.env ]; then
     ADMIN_KEY=$(openssl rand -hex 32)
     DB_PASS=$(openssl rand -hex 24)
     sed -i "s/ADMIN_API_KEY=.*/ADMIN_API_KEY=$ADMIN_KEY/" backend/.env
+    sed -i "s|ALLOWED_ORIGINS=.*|ALLOWED_ORIGINS=https://$DOMAIN|" backend/.env
     cat >> .env.prod <<EOF
 POSTGRES_USER=renate
 POSTGRES_PASSWORD=$DB_PASS
 POSTGRES_DB=renate_talent
-NEXT_PUBLIC_API_URL=https://$DOMAIN/api
+NEXT_PUBLIC_API_URL=https://$DOMAIN/talent/api
 EOF
     echo ""
     echo "!!! Generated credentials — save these now !!!"
@@ -68,4 +69,4 @@ chmod +x /usr/local/bin/renate-backup
 (crontab -l 2>/dev/null; echo "0 2 * * * /usr/local/bin/renate-backup >> /var/log/renate-backup.log 2>&1") | crontab -
 
 echo ""
-echo "==> Done! App is live at https://$DOMAIN"
+echo "==> Done! App is live at https://$DOMAIN/talent"
