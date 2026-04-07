@@ -19,6 +19,7 @@ services:
     ports: []  # Only accessible via nginx
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_BASE_PATH: /talent
 
   nginx:
     image: nginx:alpine
