@@ -5,13 +5,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { submissionSchema, SubmissionFormData } from "@/lib/validation";
 import { submitResume } from "@/lib/api";
-import { useCollegesAndIndustries } from "@/hooks/useCollegesAndIndustries";
+import { College, Industry } from "@/lib/types";
 import FileUpload from "./FileUpload";
 import FormError from "./FormError";
 import SuccessCard from "./SuccessCard";
 
-export default function SubmissionForm() {
-  const { colleges, industries, loading, error: dataError } = useCollegesAndIndustries();
+interface SubmissionFormProps {
+  colleges: College[];
+  industries: Industry[];
+}
+
+export default function SubmissionForm({ colleges, industries }: SubmissionFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);

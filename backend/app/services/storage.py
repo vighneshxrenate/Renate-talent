@@ -2,12 +2,15 @@ import asyncio
 import logging
 import re
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from supabase import create_client, Client
 
 from app.config import settings
+
+_upload_pool = ThreadPoolExecutor(max_workers=20)
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +42,13 @@ class StorageService:
     ) -> str:
         path = self._build_path(college_slug, student_name)
         try:
+            loop = asyncio.get_running_loop()
             await asyncio.wait_for(
-                asyncio.to_thread(
-                    self.client.storage.from_(self.bucket).upload,
-                    path,
-                    file_bytes,
-                    {"content-type": "application/pdf"},
+                loop.run_in_executor(
+                    _upload_pool,
+                    lambda: self.client.storage.from_(self.bucket).upload(
+                        path, file_bytes, {"content-type": "application/pdf"}
+                    ),
                 ),
                 timeout=30,
             )
@@ -59,9 +63,11 @@ class StorageService:
 
     async def delete_resume(self, path: str) -> None:
         try:
+            loop = asyncio.get_running_loop()
             await asyncio.wait_for(
-                asyncio.to_thread(
-                    self.client.storage.from_(self.bucket).remove, [path]
+                loop.run_in_executor(
+                    _upload_pool,
+                    lambda: self.client.storage.from_(self.bucket).remove([path]),
                 ),
                 timeout=10,
             )

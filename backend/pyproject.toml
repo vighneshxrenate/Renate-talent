@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.0",
     "supabase>=2.0",
     "python-multipart>=0.0.9",
+    "slowapi>=0.1.9",
 ]
 
 [project.optional-dependencies]
@@ -24,6 +25,10 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
 
 [build-system]
 requires = ["setuptools>=68"]

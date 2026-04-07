@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     supabase_service_key: str
     allowed_origins: str = "http://localhost:3000"
     max_upload_size_mb: int = 5
+    environment: str = "development"
 
     model_config = {"env_file": ".env"}
 

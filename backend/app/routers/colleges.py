@@ -2,6 +2,7 @@ import time
 from typing import List
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,8 +21,14 @@ _CACHE_TTL = 3600  # 1 hour
 async def list_colleges(db: AsyncSession = Depends(get_db)):
     global _cache, _cache_time
     if _cache and (time.time() - _cache_time) < _CACHE_TTL:
-        return _cache
+        data = [c.model_dump(mode="json") for c in _cache]
+        response = JSONResponse(content=data)
+        response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=600"
+        return response
     result = await db.execute(select(College).order_by(College.name))
     _cache = [CollegeOut.model_validate(c) for c in result.scalars().all()]
     _cache_time = time.time()
-    return _cache
+    data = [c.model_dump(mode="json") for c in _cache]
+    response = JSONResponse(content=data)
+    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=600"
+    return response
