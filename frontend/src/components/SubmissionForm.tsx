@@ -6,16 +6,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { submissionSchema, SubmissionFormData } from "@/lib/validation";
 import { submitResume } from "@/lib/api";
 import { College, Industry } from "@/lib/types";
+import { useCollegesAndIndustries } from "@/hooks/useCollegesAndIndustries";
 import FileUpload from "./FileUpload";
 import FormError from "./FormError";
 import SuccessCard from "./SuccessCard";
 
 interface SubmissionFormProps {
-  colleges: College[];
-  industries: Industry[];
+  colleges?: College[];
+  industries?: Industry[];
 }
 
-export default function SubmissionForm({ colleges, industries }: SubmissionFormProps) {
+export default function SubmissionForm({ colleges: collegesProp, industries: industriesProp }: SubmissionFormProps = {}) {
+  const fetched = useCollegesAndIndustries();
+  const colleges = collegesProp ?? fetched.colleges;
+  const industries = industriesProp ?? fetched.industries;
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
