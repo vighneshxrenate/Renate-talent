@@ -448,25 +448,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           maxWidth: "64rem", margin: "0 auto", width: "100%",
         }}
       >
-        {/* Badge */}
-        <div
-          className="animate-fade-up"
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "0.5rem",
-            background: "rgba(245,243,255,0.85)", border: "1px solid rgba(124,58,237,0.25)",
-            borderRadius: "9999px", padding: "0.3rem 0.875rem", marginBottom: "0.875rem",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <span
-            className="animate-pulse-glow"
-            style={{ width: 8, height: 8, borderRadius: "50%", background: "#7c3aed", display: "inline-block" }}
-          />
-          <span className="font-display" style={{ color: "#7c3aed", fontSize: "0.8125rem", fontWeight: 600 }}>
-            AI-Powered Talent Matching Platform
-          </span>
-        </div>
-
         {/* Headline */}
         <h1
           className="font-display animate-fade-up delay-100"
@@ -524,7 +505,7 @@ function Hero({ onOpen }: { onOpen: () => void }) {
             gap: "1.5rem", marginTop: "1.5rem", flexWrap: "wrap",
           }}
         >
-          {["50k+ Professionals Placed", "36 Industries", "Free for Students"].map((item, i) => (
+          {["36 Industries", "Free for Students"].map((item, i) => (
             <div
               key={item}
               style={{
