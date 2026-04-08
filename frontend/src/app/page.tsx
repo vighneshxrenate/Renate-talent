@@ -4,38 +4,6 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import SubmissionForm from "@/components/SubmissionForm";
 
-// ── Count-up hook ─────────────────────────────────────────────────────────────
-function useCountUp(target: number, duration = 2200) {
-  const [count, setCount] = useState(0);
-  const started = useRef(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const t0 = performance.now();
-          const tick = (now: number) => {
-            const p = Math.min((now - t0) / duration, 1);
-            const eased = 1 - Math.pow(1 - p, 3);
-            setCount(Math.round(eased * target));
-            if (p < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        }
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [target, duration]);
-
-  return { count, ref };
-}
-
 // ── Parallax mouse hook ───────────────────────────────────────────────────────
 function useMouseParallax(factor = 0.02) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -332,7 +300,7 @@ function Navbar({ onOpen }: { onOpen: () => void }) {
           {/* Logo */}
           <div
             style={{
-              position: "relative", width: 160, height: 48,
+              position: "relative", width: 220, height: 64,
               overflow: "hidden", borderRadius: 8, flexShrink: 0,
               transition: "transform 0.3s ease",
             }}
@@ -399,7 +367,7 @@ function Navbar({ onOpen }: { onOpen: () => void }) {
         >
           ✕
         </button>
-        <div style={{ position: "relative", width: 160, height: 48, overflow: "hidden", borderRadius: 8 }}>
+        <div style={{ position: "relative", width: 220, height: 64, overflow: "hidden", borderRadius: 8 }}>
           <Image src="/logo.jpeg" alt="Renate AI" fill className="object-contain object-left" />
         </div>
         <button
@@ -585,11 +553,8 @@ function Hero({ onOpen }: { onOpen: () => void }) {
 
         {/* CTAs */}
         <div
-          className="animate-fade-up delay-300 hero-cta-group"
-          style={{
-            display: "flex", flexWrap: "wrap", gap: "1rem",
-            justifyContent: "center", alignItems: "center",
-          }}
+          className="animate-fade-up delay-300"
+          style={{ display: "flex", justifyContent: "center", marginBottom: "0" }}
         >
           <button
             className="btn-primary"
@@ -597,12 +562,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
             style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
           >
             Submit Your Resume
-          </button>
-          <button
-            className="btn-outline"
-            onClick={() => document.getElementById("stats")?.scrollIntoView({ behavior: "smooth" })}
-          >
-            See Our Impact ↓
           </button>
         </div>
 
@@ -632,139 +591,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div
-        className="animate-fade-up delay-500 animate-bounce-soft"
-        style={{
-          position: "absolute", bottom: "2.5rem",
-          display: "flex", flexDirection: "column", alignItems: "center", gap: "0.375rem",
-          color: "#94a3b8", pointerEvents: "none",
-        }}
-      >
-        <span
-          className="font-display"
-          style={{ fontSize: "0.6875rem", letterSpacing: "0.12em", textTransform: "uppercase" }}
-        >
-          Scroll
-        </span>
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M4 6.5L9 11.5L14 6.5" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-
-      {/* Bottom fade */}
-      <div
-        style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: 120,
-          background: "linear-gradient(to bottom, transparent, rgba(245,243,255,0.2))",
-          pointerEvents: "none",
-        }}
-      />
-    </section>
-  );
-}
-
-// ── Stats Strip ───────────────────────────────────────────────────────────────
-interface StatDef {
-  raw: number; suffix: string; label: string; icon: string; gradient: string;
-}
-
-function StatCard({ stat, index }: { stat: StatDef; index: number }) {
-  const { count, ref } = useCountUp(stat.raw);
-  const display = stat.raw >= 1000 ? count.toLocaleString() : count.toString();
-
-  return (
-    <div
-      ref={ref}
-      className="glass-card reveal"
-      style={{ textAlign: "center", padding: "2rem 1.5rem", transitionDelay: `${index * 0.1}s` }}
-    >
-      <div
-        className="icon-box"
-        style={{ background: stat.gradient, margin: "0 auto 0.75rem", fontSize: "1.5rem" }}
-      >
-        {stat.icon}
-      </div>
-      <div
-        className="font-display text-gradient-violet"
-        style={{ fontSize: "2.5rem", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.02em" }}
-      >
-        {display}{stat.suffix}
-      </div>
-      <div style={{ color: "#94a3b8", fontSize: "0.875rem", marginTop: "0.625rem", fontWeight: 500 }}>
-        {stat.label}
-      </div>
-    </div>
-  );
-}
-
-function StatsStrip() {
-  const stats: StatDef[] = [
-    { raw: 50000, suffix: "+",   label: "Professionals Placed", icon: "🎓", gradient: "rgba(124,58,237,0.12)" },
-    { raw: 72,    suffix: "hrs", label: "Average Match Time",   icon: "⚡", gradient: "rgba(245,158,11,0.12)" },
-    { raw: 98,    suffix: "%",   label: "Satisfaction Rate",    icon: "⭐", gradient: "rgba(34,197,94,0.12)" },
-    { raw: 5000,  suffix: "+",   label: "Partner Companies",    icon: "🏢", gradient: "rgba(109,40,217,0.12)" },
-  ];
-
-  return (
-    <section
-      id="stats"
-      style={{
-        padding: "clamp(3rem, 6vw, 5rem) 1.5rem",
-        background: "linear-gradient(180deg, rgba(245,243,255,0.5) 0%, #ffffff 60%, rgba(237,233,254,0.2) 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Background orb */}
-      <div
-        className="animate-morph-blob"
-        style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600, height: 300,
-          background: "radial-gradient(ellipse, rgba(124,58,237,0.05) 0%, transparent 70%)",
-          filter: "blur(40px)", pointerEvents: "none",
-        }}
-      />
-
-      <div style={{ maxWidth: "64rem", margin: "0 auto", position: "relative", zIndex: 1 }}>
-        {/* Section label */}
-        <div className="reveal" style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <span
-            className="font-display"
-            style={{
-              color: "#7c3aed", fontSize: "0.75rem", fontWeight: 600,
-              letterSpacing: "0.14em", textTransform: "uppercase",
-              display: "block", marginBottom: "0.5rem",
-            }}
-          >
-            Our Impact
-          </span>
-          <h2
-            className="font-display"
-            style={{
-              fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)", fontWeight: 800,
-              letterSpacing: "-0.025em", color: "#0f0a1e", lineHeight: 1.15,
-            }}
-          >
-            Trusted by{" "}
-            <span className="text-gradient-violet">thousands</span>
-          </h2>
-        </div>
-
-        <div
-          className="stats-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}
-        >
-          {stats.map((s, i) => <StatCard key={s.label} stat={s} index={i} />)}
-        </div>
-      </div>
-
-      <style jsx>{`
-        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr !important; } }
-      `}</style>
     </section>
   );
 }
@@ -833,7 +659,6 @@ export default function Home() {
       <main style={{ background: "#ffffff" }}>
         <Navbar onOpen={openModal} />
         <Hero onOpen={openModal} />
-        <StatsStrip />
       </main>
 
       <FormModal
