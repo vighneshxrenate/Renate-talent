@@ -1,8 +1,12 @@
+import csv
+import io
 import logging
 import uuid
+import zipfile
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
+from fastapi.responses import StreamingResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import func, select
@@ -126,4 +130,90 @@ async def list_submissions(
         total=total,
         page=page,
         page_size=page_size,
+    )
+
+
+@router.get("/submissions/export/csv")
+@limiter.limit("10/minute")
+async def export_submissions_csv(
+    request: Request,
+    industry_id: Optional[uuid.UUID] = None,
+    college_id: Optional[uuid.UUID] = None,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_admin_key),
+):
+    query = select(Submission).order_by(Submission.created_at.desc())
+    if industry_id:
+        query = query.where(Submission.industry_id == industry_id)
+    if college_id:
+        query = query.where(Submission.college_id == college_id)
+
+    result = await db.execute(query)
+    submissions = result.scalars().all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id", "name", "email", "phone", "college", "industry", "note", "submitted_at", "resume_path"])
+    for s in submissions:
+        writer.writerow([
+            str(s.id),
+            s.student_name,
+            s.email,
+            s.phone,
+            s.college.name if s.college else "",
+            s.industry.name if s.industry else "",
+            s.note or "",
+            s.created_at.isoformat(),
+            s.resume_storage_path,
+        ])
+
+    output.seek(0)
+    filename = f"submissions_{industry_id or 'all'}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.get("/submissions/export/zip")
+@limiter.limit("5/minute")
+async def export_submissions_zip(
+    request: Request,
+    industry_id: Optional[uuid.UUID] = None,
+    college_id: Optional[uuid.UUID] = None,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_admin_key),
+):
+    query = select(Submission).order_by(Submission.created_at.desc())
+    if industry_id:
+        query = query.where(Submission.industry_id == industry_id)
+    if college_id:
+        query = query.where(Submission.college_id == college_id)
+
+    result = await db.execute(query)
+    submissions = result.scalars().all()
+
+    if not submissions:
+        raise HTTPException(404, "No submissions found for the given filters")
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for s in submissions:
+            try:
+                file_bytes = await storage_service.download_resume(s.resume_storage_path)
+                industry_name = s.industry.name if s.industry else "unknown"
+                college_name = s.college.name if s.college else "unknown"
+                safe_name = s.student_name.replace(" ", "_")[:40]
+                filename = f"{industry_name}/{college_name}/{safe_name}.pdf"
+                zf.writestr(filename, file_bytes)
+            except Exception as e:
+                logger.error("Failed to fetch resume %s: %s", s.resume_storage_path, e)
+
+    zip_buffer.seek(0)
+    label = f"resumes_{industry_id or 'all'}"
+    return StreamingResponse(
+        iter([zip_buffer.getvalue()]),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={label}.zip"},
     )

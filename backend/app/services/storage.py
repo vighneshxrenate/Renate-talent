@@ -61,6 +61,23 @@ class StorageService:
             logger.error("Upload failed for %s: %s", path, e)
             raise HTTPException(503, "Storage service unavailable, please try again")
 
+    async def download_resume(self, path: str) -> bytes:
+        try:
+            loop = asyncio.get_running_loop()
+            data = await asyncio.wait_for(
+                loop.run_in_executor(
+                    _upload_pool,
+                    lambda: self.client.storage.from_(self.bucket).download(path),
+                ),
+                timeout=30,
+            )
+            return data
+        except asyncio.TimeoutError:
+            raise HTTPException(504, f"Timed out downloading {path}")
+        except Exception as e:
+            logger.error("Download failed for %s: %s", path, e)
+            raise HTTPException(503, f"Could not download {path}")
+
     async def delete_resume(self, path: str) -> None:
         try:
             loop = asyncio.get_running_loop()
