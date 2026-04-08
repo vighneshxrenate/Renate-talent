@@ -476,11 +476,11 @@ function Hero({ onOpen }: { onOpen: () => void }) {
             color: "#0f0a1e",
           }}
         >
-          <span style={{ color: "#1e1b5e", WebkitTextFillColor: "#1e1b5e" }}>Looking for</span>
+          <span style={{ color: "#4c1d95", WebkitTextFillColor: "#4c1d95" }}>Looking for</span>
           <br />
           <span className="typing-cursor" style={{ color: "#0f0a1e" }}>{typingText || "\u00A0"}</span>
           <br />
-          <span style={{ color: "#1e1b5e", WebkitTextFillColor: "#1e1b5e" }}>Renate</span>
+          <span style={{ color: "#4c1d95", WebkitTextFillColor: "#4c1d95" }}>Renate</span>
           <br />
           <span style={{ color: "#0f0a1e" }}>Will Help You.</span>
         </h1>
