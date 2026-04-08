@@ -196,7 +196,13 @@ export default function SubmissionForm({ colleges: collegesProp, industries: ind
           {...register("phone")}
           id="phone"
           type="tel"
-          placeholder="+91 98765 43210"
+          placeholder="10-digit mobile number"
+          maxLength={10}
+          onKeyDown={(e) => {
+            if (!/^\d$/.test(e.key) && !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
         />
         {errors.phone && (

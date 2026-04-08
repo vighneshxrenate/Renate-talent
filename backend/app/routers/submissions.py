@@ -29,7 +29,7 @@ async def create_submission(
     request: Request,
     student_name: str = Form(..., min_length=1, max_length=200),
     email: str = Form(...),
-    phone: str = Form(..., min_length=7, max_length=20),
+    phone: str = Form(..., min_length=10, max_length=10),
     college_id: uuid.UUID = Form(...),
     industry_id: uuid.UUID = Form(...),
     resume: UploadFile = UploadFile(...),

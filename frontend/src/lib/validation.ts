@@ -10,9 +10,7 @@ export const submissionSchema = z.object({
   email: z.string().email("Enter a valid email address"),
   phone: z
     .string()
-    .min(7, "Phone number is too short")
-    .max(20, "Phone number is too long")
-    .regex(/^[+\d\s\-()]+$/, "Enter a valid phone number"),
+    .regex(/^\d{10}$/, "Enter a valid 10-digit mobile number"),
   college_id: z.string().min(1, "Please select a college"),
   industry_id: z.string().min(1, "Please select an industry"),
   note: z.string().max(1000, "Note is too long").optional().or(z.literal("")),
