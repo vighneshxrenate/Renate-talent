@@ -153,8 +153,9 @@ async def export_submissions_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["id", "name", "email", "phone", "college", "industry", "note", "submitted_at", "resume_path"])
+    writer.writerow(["id", "name", "email", "phone", "college", "industry", "note", "submitted_at", "resume_link"])
     for s in submissions:
+        signed_url = await storage_service.create_signed_url(s.resume_storage_path)
         writer.writerow([
             str(s.id),
             s.student_name,
@@ -164,7 +165,7 @@ async def export_submissions_csv(
             s.industry.name if s.industry else "",
             s.note or "",
             s.created_at.isoformat(),
-            s.resume_storage_path,
+            signed_url,
         ])
 
     output.seek(0)

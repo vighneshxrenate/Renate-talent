@@ -61,6 +61,19 @@ class StorageService:
             logger.error("Upload failed for %s: %s", path, e)
             raise HTTPException(503, "Storage service unavailable, please try again")
 
+    async def create_signed_url(self, path: str, expires_in: int = 604800) -> str:
+        """Return a signed URL valid for `expires_in` seconds (default 7 days)."""
+        try:
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(
+                _upload_pool,
+                lambda: self.client.storage.from_(self.bucket).create_signed_url(path, expires_in),
+            )
+            return result["signedURL"]
+        except Exception as e:
+            logger.error("Failed to create signed URL for %s: %s", path, e)
+            return ""
+
     async def download_resume(self, path: str) -> bytes:
         try:
             loop = asyncio.get_running_loop()
