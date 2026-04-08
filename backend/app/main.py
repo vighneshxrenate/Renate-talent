@@ -1,85 +1,65 @@
 import logging
-import os
-import sys
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from pythonjsonlogger.json import JsonFormatter
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import settings
-
-# Sentry — initialise early, only if DSN is configured
-if settings.sentry_dsn:
-    import sentry_sdk
-    from sentry_sdk.integrations.fastapi import FastApiIntegration
-    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        integrations=[FastApiIntegration(), SqlalchemyIntegration()],
-        traces_sample_rate=0.1,
-        send_default_pii=False,
-    )
-
 from app.database import engine
-from app.middleware.request_id import RequestIdMiddleware
-from app.middleware.security import SecurityHeadersMiddleware
+from app.logging_config import setup_logging
 from app.routers import colleges, health, industries, submissions
 
-# Structured JSON logging
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(JsonFormatter(
-    fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
-    rename_fields={"asctime": "timestamp", "levelname": "level"},
-))
-logging.root.handlers = [_handler]
-logging.root.setLevel(logging.INFO)
+setup_logging()
 logger = logging.getLogger(__name__)
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+        request.state.request_id = request_id
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs(settings.upload_dir, exist_ok=True)
-    logger.info("Starting Renate Talent API (upload_dir=%s)", settings.upload_dir)
+    logger.info("Starting Renate Talent API")
     yield
     logger.info("Shutting down, disposing connection pool")
     await engine.dispose()
 
 
-app = FastAPI(title="Renate Talent", version="0.1.0", lifespan=lifespan)
+docs_kwargs = {}
+if settings.environment == "production":
+    docs_kwargs = {"docs_url": None, "redoc_url": None, "openapi_url": None}
+
+app = FastAPI(title="Renate Talent", version="0.1.0", lifespan=lifespan, **docs_kwargs)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Middleware order: add_middleware stacks in reverse, so last added = outermost.
-# CORSMiddleware must be outermost so it intercepts before BaseHTTPMiddleware
-# reconstructs response objects (which would lose CORS headers).
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(RequestIdMiddleware)
+app.add_middleware(RequestIDMiddleware)
+app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type", "X-API-Key"],
+    allow_headers=["Content-Type"],
 )
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    request_id = getattr(request.state, "request_id", "unknown")
-    logger.error(
-        "Unhandled error on %s %s: %s",
-        request.method,
-        request.url.path,
-        exc,
-        extra={"request_id": request_id},
-    )
+    logger.error("Unhandled error on %s %s: %s", request.method, request.url.path, exc)
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
