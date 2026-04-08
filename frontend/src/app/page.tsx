@@ -295,7 +295,7 @@ function Navbar({ onOpen }: { onOpen: () => void }) {
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <Image src="/RENATE_UPDATED_FINAL_LOGO.png" alt="Renate AI" fill className="object-contain object-left" priority />
+          <Image src="/RENATE_CURRENT_FINAL_UPDATED_LOGO-removebg-preview.png" alt="Renate AI" fill className="object-contain object-left" priority />
         </div>
       </nav>
 
@@ -427,7 +427,7 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           <Image
-            src="/RENATE_UPDATED_FINAL_LOGO.png"
+            src="/RENATE_CURRENT_FINAL_UPDATED_LOGO-removebg-preview.png"
             alt="Renate AI"
             fill
             className="object-contain object-left"
