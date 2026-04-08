@@ -19,6 +19,7 @@ const cspHeader = `
 const nextConfig: NextConfig = {
   output: "standalone",
   basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
+  images: { unoptimized: true },
   async headers() {
     return [
       {
