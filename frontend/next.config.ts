@@ -18,7 +18,7 @@ const cspHeader = `
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  basePath: "/talent",
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
   async headers() {
     return [
       {

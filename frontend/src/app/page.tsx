@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import SubmissionForm from "@/components/SubmissionForm";
 
-
 // ── Parallax mouse hook ───────────────────────────────────────────────────────
 function useMouseParallax(factor = 0.02) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -241,7 +240,7 @@ function FormModal({
 }
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar() {
+function Navbar({ onOpen }: { onOpen: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -256,54 +255,52 @@ function Navbar() {
   }, []);
 
   return (
-    <nav
-      style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: scrolled ? "0.75rem 1.5rem" : "1rem 1.5rem",
-        transition: "all 0.35s ease",
-        ...(scrolled
-          ? {
-              background: "rgba(255,255,255,0.92)",
-              backdropFilter: "blur(20px) saturate(180%)",
-              WebkitBackdropFilter: "blur(20px) saturate(180%)",
-              borderBottom: "1px solid rgba(124,58,237,0.12)",
-              boxShadow: "0 4px 24px rgba(124,58,237,0.08)",
-            }
-          : {
-              background: "transparent",
-              borderBottom: "1px solid transparent",
-            }),
-      }}
-    >
-      {/* Scroll progress bar */}
-      <div
+    <>
+      <nav
         style={{
-          position: "absolute", top: 0, left: 0, height: 2,
-          width: `${scrollProgress}%`,
-          background: "linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd)",
-          transition: "width 0.1s linear",
-        }}
-      />
-
-      <div
-        style={{
-          maxWidth: "72rem", margin: "0 auto",
-          display: "flex", alignItems: "center",
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+          padding: scrolled ? "0.5rem 1rem" : "0.5rem 1rem",
+          transition: "all 0.35s ease",
+          ...(scrolled
+            ? {
+                background: "rgba(255,255,255,0.92)",
+                backdropFilter: "blur(20px) saturate(180%)",
+                WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                borderBottom: "1px solid rgba(124,58,237,0.12)",
+                boxShadow: "0 4px 24px rgba(124,58,237,0.08)",
+              }
+            : {
+                background: "transparent",
+                borderBottom: "1px solid transparent",
+              }),
         }}
       >
-        {/* Logo */}
+        {/* Scroll progress bar */}
         <div
           style={{
-            flexShrink: 0, borderRadius: 8,
+            position: "absolute", top: 0, left: 0, height: 2,
+            width: `${scrollProgress}%`,
+            background: "linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd)",
+            transition: "width 0.1s linear",
+          }}
+        />
+
+        {/* Logo – 500×150 flush left */}
+        <div
+          style={{
+            position: "relative", width: 500, height: 150,
+            overflow: "hidden", borderRadius: 8, flexShrink: 0,
             transition: "transform 0.3s ease",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <Image src="/logo.jpeg" alt="Renate AI" width={160} height={48} className="object-contain" style={{ objectPosition: "left" }} priority />
+          <Image src="/RENATE_CURRENT_FINAL_UPDATED_LOGO-removebg-preview.png" alt="Renate AI" fill className="object-contain object-left" priority />
         </div>
-      </div>
-    </nav>
+      </nav>
+
+
+    </>
   );
 }
 
@@ -352,10 +349,12 @@ function Hero({ onOpen }: { onOpen: () => void }) {
   return (
     <section
       style={{
-        position: "relative", minHeight: "100vh",
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        overflow: "hidden", background: "#ffffff",
+        position: "relative",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        background: "#ffffff",
       }}
     >
       {/* Dot grid */}
@@ -398,7 +397,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           transition: "transform 0.3s ease-out",
         }}
       />
-      {/* Extra violet-light orb */}
       <div
         className="animate-float-b"
         style={{
@@ -411,49 +409,59 @@ function Hero({ onOpen }: { onOpen: () => void }) {
         }}
       />
 
-      {/* Content */}
+      {/* ── Logo top-left ── */}
       <div
         style={{
-          position: "relative", zIndex: 10, textAlign: "center",
-          padding: "0 1.5rem", maxWidth: "64rem", margin: "0 auto", paddingTop: "7rem",
+          position: "relative", zIndex: 10,
+          padding: "0.25rem 1rem",
+          flexShrink: 0,
         }}
       >
-        {/* Badge */}
         <div
-          className="animate-fade-up"
           style={{
-            display: "inline-flex", alignItems: "center", gap: "0.5rem",
-            background: "rgba(245,243,255,0.85)", border: "1px solid rgba(124,58,237,0.25)",
-            borderRadius: "9999px", padding: "0.375rem 1rem", marginBottom: "2rem",
-            backdropFilter: "blur(10px)",
+            position: "relative", width: 480, height: 130,
+            overflow: "hidden", borderRadius: 8,
+            transition: "transform 0.3s ease",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          <span
-            className="animate-pulse-glow"
-            style={{
-              width: 8, height: 8, borderRadius: "50%",
-              background: "#7c3aed", display: "inline-block",
-            }}
+          <Image
+            src="/RENATE_CURRENT_FINAL_UPDATED_LOGO-removebg-preview.png"
+            alt="Renate AI"
+            fill
+            className="object-contain object-left"
+            priority
           />
-          <span className="font-display" style={{ color: "#7c3aed", fontSize: "0.8125rem", fontWeight: 600 }}>
-            AI-Powered Talent Matching Platform
-          </span>
         </div>
+      </div>
 
+      {/* ── Main content – centred in remaining space ── */}
+      <div
+        style={{
+          position: "relative", zIndex: 10,
+          flex: 1,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          textAlign: "center",
+          padding: "0 1.5rem",
+          maxWidth: "64rem", margin: "0 auto", width: "100%",
+        }}
+      >
         {/* Headline */}
         <h1
           className="font-display animate-fade-up delay-100"
           style={{
-            fontSize: "clamp(2.75rem, 7vw, 5.5rem)", fontWeight: 800,
-            lineHeight: 1.06, letterSpacing: "-0.03em", marginBottom: "1.5rem",
+            fontSize: "clamp(2rem, 5.5vw, 4.25rem)", fontWeight: 800,
+            lineHeight: 1.08, letterSpacing: "-0.03em", marginBottom: "0.875rem",
             color: "#0f0a1e",
           }}
         >
-          <span className="text-gradient-violet">Looking for</span>
+          <span style={{ color: "#4c1d95", WebkitTextFillColor: "#4c1d95" }}>Looking for</span>
           <br />
           <span className="typing-cursor" style={{ color: "#0f0a1e" }}>{typingText || "\u00A0"}</span>
           <br />
-          <span className="text-gradient-shimmer-violet">Renate</span>
+          <span style={{ color: "#4c1d95", WebkitTextFillColor: "#4c1d95" }}>Renate</span>
           <br />
           <span style={{ color: "#0f0a1e" }}>Will Help You.</span>
         </h1>
@@ -462,27 +470,28 @@ function Hero({ onOpen }: { onOpen: () => void }) {
         <p
           className="animate-fade-up delay-200"
           style={{
-            fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
-            color: "#64748b", maxWidth: 560, margin: "0 auto 2.5rem",
-            lineHeight: 1.75, fontWeight: 400,
+            fontSize: "clamp(0.9rem, 2vw, 1.125rem)",
+            color: "#64748b", maxWidth: 520, margin: "0 auto 1.25rem",
+            lineHeight: 1.65, fontWeight: 400,
           }}
         >
           Renate AI intelligently matches your resume with the right employers
           across 36 industries.
         </p>
 
-        {/* CTAs */}
+        {/* CTA */}
         <div
-          className="animate-fade-up delay-300 hero-cta-group"
-          style={{
-            display: "flex", flexWrap: "wrap", gap: "1rem",
-            justifyContent: "center", alignItems: "center",
-          }}
+          className="animate-fade-up delay-300"
+          style={{ display: "flex", justifyContent: "center", marginBottom: "0" }}
         >
           <button
             className="btn-primary"
             onClick={onOpen}
-            style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
+            style={{
+              fontSize: "1rem", padding: "0.875rem 2.25rem",
+              background: "linear-gradient(135deg, #1e1b5e 0%, #2d2a7a 100%)",
+              boxShadow: "0 4px 20px rgba(30,27,94,0.4), 0 1px 3px rgba(0,0,0,0.12)",
+            }}
           >
             Submit Your Resume
           </button>
@@ -493,10 +502,10 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           className="animate-fade-up delay-400 hero-trust-grid"
           style={{
             display: "flex", alignItems: "center", justifyContent: "center",
-            gap: "1.5rem", marginTop: "3rem", flexWrap: "wrap",
+            gap: "1.5rem", marginTop: "1.5rem", flexWrap: "wrap",
           }}
         >
-          {["50k+ Professionals Placed", "36 Industries", "Free for Students"].map((item, i) => (
+          {["36 Industries", "Free for Students"].map((item, i) => (
             <div
               key={item}
               style={{
@@ -513,39 +522,9 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           ))}
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <div
-        className="animate-fade-up delay-500 animate-bounce-soft"
-        style={{
-          position: "absolute", bottom: "2.5rem",
-          display: "flex", flexDirection: "column", alignItems: "center", gap: "0.375rem",
-          color: "#94a3b8", pointerEvents: "none",
-        }}
-      >
-        <span
-          className="font-display"
-          style={{ fontSize: "0.6875rem", letterSpacing: "0.12em", textTransform: "uppercase" }}
-        >
-          Scroll
-        </span>
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M4 6.5L9 11.5L14 6.5" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-
-      {/* Bottom fade */}
-      <div
-        style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: 120,
-          background: "linear-gradient(to bottom, transparent, rgba(245,243,255,0.2))",
-          pointerEvents: "none",
-        }}
-      />
     </section>
   );
 }
-
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
@@ -608,8 +587,7 @@ export default function Home() {
 
   return (
     <>
-      <main style={{ background: "#ffffff" }}>
-        <Navbar />
+      <main style={{ background: "#ffffff", height: "100vh", overflow: "hidden" }}>
         <Hero onOpen={openModal} />
       </main>
 

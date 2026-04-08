@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.middleware.auth import require_admin_key
 from app.models.college import College
 from app.models.industry import Industry
 from app.models.submission import Submission
@@ -94,12 +95,15 @@ async def create_submission(
 
 
 @router.get("/submissions", response_model=SubmissionListOut)
+@limiter.limit("30/minute")
 async def list_submissions(
+    request: Request,
     college_id: Optional[uuid.UUID] = None,
     industry_id: Optional[uuid.UUID] = None,
     page: int = 1,
     page_size: int = 50,
     db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_admin_key),
 ):
     query = select(Submission)
     count_query = select(func.count()).select_from(Submission)
