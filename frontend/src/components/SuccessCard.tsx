@@ -28,12 +28,6 @@ export default function SuccessCard({ onReset }: SuccessCardProps) {
       <p className="text-gray-600 mb-8">
         Your resume has been submitted successfully. We&apos;ll be in touch!
       </p>
-      <button
-        onClick={onReset}
-        className="text-indigo-600 hover:text-indigo-800 font-medium cursor-pointer"
-      >
-        Submit another resume
-      </button>
     </div>
   );
 }
