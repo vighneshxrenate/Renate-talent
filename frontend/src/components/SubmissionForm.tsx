@@ -29,6 +29,7 @@ export default function SubmissionForm({ colleges: collegesProp, industries: ind
     handleSubmit,
     reset,
     setValue,
+    setError,
     trigger,
     formState: { errors },
   } = useForm<SubmissionFormData>({
@@ -60,9 +61,15 @@ export default function SubmissionForm({ colleges: collegesProp, industries: ind
       await submitResume(formData);
       setSubmitted(true);
     } catch (err) {
-      setServerError(
-        err instanceof Error ? err.message : "Something went wrong"
-      );
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      const lower = msg.toLowerCase();
+      if (lower.includes("phone") || lower.includes("10 character")) {
+        setError("phone", { message: "Enter a valid 10-digit mobile number" });
+      } else if (lower.includes("email")) {
+        setError("email", { message: "Enter a valid email address" });
+      } else {
+        setServerError(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -202,6 +209,14 @@ export default function SubmissionForm({ colleges: collegesProp, industries: ind
             if (!/^\d$/.test(e.key) && !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
               e.preventDefault();
             }
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 10);
+            const input = e.currentTarget;
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+            nativeSetter?.call(input, digits);
+            input.dispatchEvent(new Event("input", { bubbles: true }));
           }}
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
         />
