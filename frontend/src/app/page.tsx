@@ -242,7 +242,6 @@ function FormModal({
 // ── Navbar ────────────────────────────────────────────────────────────────────
 function Navbar({ onOpen }: { onOpen: () => void }) {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
@@ -255,17 +254,12 @@ function Navbar({ onOpen }: { onOpen: () => void }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    document.body.classList.toggle("modal-open", menuOpen);
-    return () => document.body.classList.remove("modal-open");
-  }, [menuOpen]);
-
   return (
     <>
       <nav
         style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-          padding: scrolled ? "0.75rem 1.5rem" : "1rem 1.5rem",
+          padding: scrolled ? "0.5rem 1rem" : "0.5rem 1rem",
           transition: "all 0.35s ease",
           ...(scrolled
             ? {
@@ -291,98 +285,21 @@ function Navbar({ onOpen }: { onOpen: () => void }) {
           }}
         />
 
+        {/* Logo – 500×150 flush left */}
         <div
           style={{
-            maxWidth: "72rem", margin: "0 auto",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
+            position: "relative", width: 500, height: 150,
+            overflow: "hidden", borderRadius: 8, flexShrink: 0,
+            transition: "transform 0.3s ease",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
-          {/* Logo */}
-          <div
-            style={{
-              position: "relative", width: 220, height: 64,
-              overflow: "hidden", borderRadius: 8, flexShrink: 0,
-              transition: "transform 0.3s ease",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            <Image src="/logo.jpeg" alt="Renate AI" fill className="object-contain object-left" priority />
-          </div>
-
-          {/* Desktop CTA + Mobile hamburger */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <button
-              className="btn-primary hidden md:inline-flex"
-              onClick={onOpen}
-              style={{ padding: "0.5625rem 1.375rem", fontSize: "0.875rem" }}
-            >
-              Submit Resume →
-            </button>
-
-            {/* Animated hamburger */}
-            <button
-              className="md:hidden"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                width: 40, height: 40,
-                display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", gap: 5, padding: 8,
-              }}
-            >
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  style={{
-                    display: "block", width: 22, height: 2,
-                    background: "#374151", borderRadius: 2,
-                    transformOrigin: "center",
-                    transition: "transform 0.3s ease, opacity 0.3s ease",
-                    transform: menuOpen
-                      ? i === 0 ? "translateY(7px) rotate(45deg)"
-                        : i === 2 ? "translateY(-7px) rotate(-45deg)"
-                        : "scaleX(0)"
-                      : "none",
-                    opacity: menuOpen && i === 1 ? 0 : 1,
-                  }}
-                />
-              ))}
-            </button>
-          </div>
+          <Image src="/RENATE_UPDATED_FINAL_LOGO.png" alt="Renate AI" fill className="object-contain object-left" priority />
         </div>
       </nav>
 
-      {/* Mobile full-screen overlay */}
-      <div className={`mobile-menu${menuOpen ? " open" : ""}`}>
-        <button
-          onClick={() => setMenuOpen(false)}
-          aria-label="Close"
-          style={{
-            position: "absolute", top: "1.25rem", right: "1.5rem",
-            background: "none", border: "none", cursor: "pointer",
-            color: "#374151", fontSize: "1.5rem", lineHeight: 1,
-          }}
-        >
-          ✕
-        </button>
-        <div style={{ position: "relative", width: 220, height: 64, overflow: "hidden", borderRadius: 8 }}>
-          <Image src="/logo.jpeg" alt="Renate AI" fill className="object-contain object-left" />
-        </div>
-        <button
-          className="btn-primary"
-          onClick={() => { setMenuOpen(false); onOpen(); }}
-          style={{
-            fontSize: "1rem", padding: "1rem 2.5rem", marginTop: "0.5rem",
-            transition: "transform 0.35s cubic-bezier(.22,1,.36,1) 0.08s, opacity 0.3s ease 0.08s",
-            transform: menuOpen ? "translateY(0)" : "translateY(20px)",
-            opacity: menuOpen ? 1 : 0,
-          }}
-        >
-          Submit Your Resume
-        </button>
-      </div>
+
     </>
   );
 }
@@ -432,10 +349,12 @@ function Hero({ onOpen }: { onOpen: () => void }) {
   return (
     <section
       style={{
-        position: "relative", minHeight: "100vh",
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        overflow: "hidden", background: "#ffffff",
+        position: "relative",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        background: "#ffffff",
       }}
     >
       {/* Dot grid */}
@@ -478,7 +397,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           transition: "transform 0.3s ease-out",
         }}
       />
-      {/* Extra violet-light orb */}
       <div
         className="animate-float-b"
         style={{
@@ -491,11 +409,43 @@ function Hero({ onOpen }: { onOpen: () => void }) {
         }}
       />
 
-      {/* Content */}
+      {/* ── Logo top-left ── */}
       <div
         style={{
-          position: "relative", zIndex: 10, textAlign: "center",
-          padding: "0 1.5rem", maxWidth: "64rem", margin: "0 auto", paddingTop: "7rem",
+          position: "relative", zIndex: 10,
+          padding: "0.25rem 1rem",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            position: "relative", width: 480, height: 130,
+            overflow: "hidden", borderRadius: 8,
+            transition: "transform 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          <Image
+            src="/RENATE_UPDATED_FINAL_LOGO.png"
+            alt="Renate AI"
+            fill
+            className="object-contain object-left"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* ── Main content – centred in remaining space ── */}
+      <div
+        style={{
+          position: "relative", zIndex: 10,
+          flex: 1,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          textAlign: "center",
+          padding: "0 1.5rem",
+          maxWidth: "64rem", margin: "0 auto", width: "100%",
         }}
       >
         {/* Badge */}
@@ -504,16 +454,13 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           style={{
             display: "inline-flex", alignItems: "center", gap: "0.5rem",
             background: "rgba(245,243,255,0.85)", border: "1px solid rgba(124,58,237,0.25)",
-            borderRadius: "9999px", padding: "0.375rem 1rem", marginBottom: "2rem",
+            borderRadius: "9999px", padding: "0.3rem 0.875rem", marginBottom: "0.875rem",
             backdropFilter: "blur(10px)",
           }}
         >
           <span
             className="animate-pulse-glow"
-            style={{
-              width: 8, height: 8, borderRadius: "50%",
-              background: "#7c3aed", display: "inline-block",
-            }}
+            style={{ width: 8, height: 8, borderRadius: "50%", background: "#7c3aed", display: "inline-block" }}
           />
           <span className="font-display" style={{ color: "#7c3aed", fontSize: "0.8125rem", fontWeight: 600 }}>
             AI-Powered Talent Matching Platform
@@ -524,16 +471,16 @@ function Hero({ onOpen }: { onOpen: () => void }) {
         <h1
           className="font-display animate-fade-up delay-100"
           style={{
-            fontSize: "clamp(2.75rem, 7vw, 5.5rem)", fontWeight: 800,
-            lineHeight: 1.06, letterSpacing: "-0.03em", marginBottom: "1.5rem",
+            fontSize: "clamp(2rem, 5.5vw, 4.25rem)", fontWeight: 800,
+            lineHeight: 1.08, letterSpacing: "-0.03em", marginBottom: "0.875rem",
             color: "#0f0a1e",
           }}
         >
-          <span className="text-gradient-violet">Looking for</span>
+          <span style={{ color: "#1e1b5e", WebkitTextFillColor: "#1e1b5e" }}>Looking for</span>
           <br />
           <span className="typing-cursor" style={{ color: "#0f0a1e" }}>{typingText || "\u00A0"}</span>
           <br />
-          <span className="text-gradient-shimmer-violet">Renate</span>
+          <span style={{ color: "#1e1b5e", WebkitTextFillColor: "#1e1b5e" }}>Renate</span>
           <br />
           <span style={{ color: "#0f0a1e" }}>Will Help You.</span>
         </h1>
@@ -542,16 +489,16 @@ function Hero({ onOpen }: { onOpen: () => void }) {
         <p
           className="animate-fade-up delay-200"
           style={{
-            fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
-            color: "#64748b", maxWidth: 560, margin: "0 auto 2.5rem",
-            lineHeight: 1.75, fontWeight: 400,
+            fontSize: "clamp(0.9rem, 2vw, 1.125rem)",
+            color: "#64748b", maxWidth: 520, margin: "0 auto 1.25rem",
+            lineHeight: 1.65, fontWeight: 400,
           }}
         >
           Renate AI intelligently matches your resume with the right employers
           across 36 industries.
         </p>
 
-        {/* CTAs */}
+        {/* CTA */}
         <div
           className="animate-fade-up delay-300"
           style={{ display: "flex", justifyContent: "center", marginBottom: "0" }}
@@ -559,7 +506,11 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           <button
             className="btn-primary"
             onClick={onOpen}
-            style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
+            style={{
+              fontSize: "1rem", padding: "0.875rem 2.25rem",
+              background: "linear-gradient(135deg, #1e1b5e 0%, #2d2a7a 100%)",
+              boxShadow: "0 4px 20px rgba(30,27,94,0.4), 0 1px 3px rgba(0,0,0,0.12)",
+            }}
           >
             Submit Your Resume
           </button>
@@ -570,7 +521,7 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           className="animate-fade-up delay-400 hero-trust-grid"
           style={{
             display: "flex", alignItems: "center", justifyContent: "center",
-            gap: "1.5rem", marginTop: "3rem", flexWrap: "wrap",
+            gap: "1.5rem", marginTop: "1.5rem", flexWrap: "wrap",
           }}
         >
           {["50k+ Professionals Placed", "36 Industries", "Free for Students"].map((item, i) => (
@@ -590,7 +541,6 @@ function Hero({ onOpen }: { onOpen: () => void }) {
           ))}
         </div>
       </div>
-
     </section>
   );
 }
@@ -656,8 +606,7 @@ export default function Home() {
 
   return (
     <>
-      <main style={{ background: "#ffffff" }}>
-        <Navbar onOpen={openModal} />
+      <main style={{ background: "#ffffff", height: "100vh", overflow: "hidden" }}>
         <Hero onOpen={openModal} />
       </main>
 

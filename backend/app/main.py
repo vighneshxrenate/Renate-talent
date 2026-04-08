@@ -57,8 +57,11 @@ app = FastAPI(title="Renate Talent", version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-app.add_middleware(RequestIdMiddleware)
+# Middleware order: add_middleware stacks in reverse, so last added = outermost.
+# CORSMiddleware must be outermost so it intercepts before BaseHTTPMiddleware
+# reconstructs response objects (which would lose CORS headers).
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,

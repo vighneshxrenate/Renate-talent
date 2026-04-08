@@ -47,6 +47,12 @@ body.modal-open { overflow: hidden; }
   background-clip: text;
 }
 
+/* ── Renate logo navy solid text ─────────────────────────── */
+.text-logo-navy {
+  color: #1e1b5e;
+  -webkit-text-fill-color: #1e1b5e;
+}
+
 /* Keep legacy class pointing to violet */
 .text-gradient-purple {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 60%, #8b5cf6 100%);
@@ -76,15 +82,8 @@ body.modal-open { overflow: hidden; }
 }
 
 .text-gradient-shimmer-violet {
-  background: linear-gradient(
-    90deg,
-    #7c3aed 0%, #a78bfa 25%, #c4b5fd 50%, #a78bfa 75%, #7c3aed 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: text-shimmer 4s ease-in-out infinite;
+  color: #1e1b5e;
+  -webkit-text-fill-color: #1e1b5e;
 }
 
 @keyframes text-shimmer {
