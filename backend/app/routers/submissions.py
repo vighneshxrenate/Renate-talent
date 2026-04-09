@@ -5,7 +5,7 @@ import uuid
 import zipfile
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -33,7 +33,7 @@ async def create_submission(
     request: Request,
     student_name: str = Form(..., min_length=1, max_length=200),
     email: str = Form(...),
-    phone: str = Form(..., min_length=10, max_length=10),
+    phone: str = Form(..., min_length=10, max_length=10, pattern=r'^\d{10}$'),
     college_id: uuid.UUID = Form(...),
     industry_id: uuid.UUID = Form(...),
     resume: UploadFile = UploadFile(...),
@@ -104,8 +104,8 @@ async def list_submissions(
     request: Request,
     college_id: Optional[uuid.UUID] = None,
     industry_id: Optional[uuid.UUID] = None,
-    page: int = 1,
-    page_size: int = 50,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
     _key: str = Depends(require_admin_key),
 ):
@@ -133,6 +133,13 @@ async def list_submissions(
     )
 
 
+def _csv_safe(value: str) -> str:
+    """Prevent CSV injection by prefixing formula-triggering characters."""
+    if value and value[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
+
+
 @router.get("/submissions/export/csv")
 @limiter.limit("10/minute")
 async def export_submissions_csv(
@@ -158,12 +165,12 @@ async def export_submissions_csv(
         signed_url = await storage_service.create_signed_url(s.resume_storage_path)
         writer.writerow([
             str(s.id),
-            s.student_name,
-            s.email,
+            _csv_safe(s.student_name),
+            _csv_safe(s.email),
             s.phone,
-            s.college.name if s.college else "",
-            s.industry.name if s.industry else "",
-            s.note or "",
+            _csv_safe(s.college.name if s.college else ""),
+            _csv_safe(s.industry.name if s.industry else ""),
+            _csv_safe(s.note or ""),
             s.created_at.isoformat(),
             signed_url,
         ])

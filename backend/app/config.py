@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:3000"
     max_upload_size_mb: int = 5
     environment: str = "development"
+    admin_api_key: str = ""
 
     model_config = {"env_file": ".env"}
 
